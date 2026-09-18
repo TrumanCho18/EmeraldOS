@@ -11,7 +11,7 @@ namespace EmeraldOS
 {
     public class Kernel : Sys.Kernel
     {
-        String version = "1.0.0";
+        String version = "1.1.0";
         String titleTxt = " /$$$$$$$$ /$$      /$$ /$$$$$$$$ /$$$$$$$   /$$$$$$  /$$       /$$$$$$$ \r\n| $$_____/| $$$    /$$$| $$_____/| $$__  $$ /$$__  $$| $$      | $$__  $$\r\n| $$      | $$$$  /$$$$| $$      | $$  \\ $$| $$  \\ $$| $$      | $$  \\ $$\r\n| $$$$$   | $$ $$/$$ $$| $$$$$   | $$$$$$$/| $$$$$$$$| $$      | $$  | $$\r\n| $$__/   | $$  $$$| $$| $$__/   | $$__  $$| $$__  $$| $$      | $$  | $$\r\n| $$      | $$\\  $ | $$| $$      | $$  \\ $$| $$  | $$| $$      | $$  | $$\r\n| $$$$$$$$| $$ \\/  | $$| $$$$$$$$| $$  | $$| $$  | $$| $$$$$$$$| $$$$$$$/\r\n|________/|__/     |__/|________/|__/  |__/|__/  |__/|________/|_______/ ";
 
         ArrayList Users = new ArrayList();
@@ -24,6 +24,7 @@ namespace EmeraldOS
         String path = "";
         String mode = "cmdLine";
 
+        EMInterpreter interpreter = new EMInterpreter();
         protected override void BeforeRun()
         {
             dirs.Add(root);
@@ -159,6 +160,39 @@ namespace EmeraldOS
                                 Console.WriteLine(currentDir.name);
                                 break;
 
+                            case string str when (str.Length >= 2 && str.Substring(0, 2) == "em"):
+                                if (str.Split(" ").Length == 2)
+                                {
+                                    String target = str.Split(" ")[1];
+                                    if (GetFile(target, currentDir) != null)
+                                    {
+                                        interpreter.inp = GetFile(target, currentDir);
+                                        interpreter.Interpret();
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Value " + target + " not found!");
+                                    }
+
+                                } else if (str.Split(" ").Length == 3)
+                                {
+                                    String arg = str.Split(" ")[1];
+                                    if (arg == "-t")
+                                    {
+                                        String target = str.Split(" ")[2];
+                                        if (GetFile(target, currentDir) != null)
+                                        {
+                                            interpreter.inp = GetFile(target, currentDir);
+                                            interpreter.TokenList();
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Value " + target + " not found!");
+                                        }
+                                    }
+                                }
+                                break;
+
                             case string str when (str.Length >= 3 && str.Substring(0, 3) == "val"):
                                 if (str.Split(" ").Length > 1)
                                 {
@@ -275,16 +309,45 @@ namespace EmeraldOS
                         {
                             key = Console.ReadKey(true);
 
-                            if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter && key.Key != ConsoleKey.Escape)
+                            if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter && key.Key != ConsoleKey.Escape && key.Key != ConsoleKey.Tab && key.Key != ConsoleKey.Delete)
                             {
                                 inp += key.KeyChar;
                                 Console.Write(key.KeyChar);
                             } else if (key.Key == ConsoleKey.Escape)
-                            {
+                            {   
                                 mode = "cmdLine";
+                            } else if (key.Key == ConsoleKey.Tab)
+                            {
+                                inp += "   ";
+                                Console.Write("   ");
                             }
+                            else if (key.Key == ConsoleKey.Backspace)
+                            {
+
+                                if (inp.Length > 0)
+                                {
+                                    inp = inp.Remove(inp.Length - 1);
+                                }
+                                Console.Clear();
+                                Oras(1, currentFile);
+                                Console.Write(inp);
+                            } else if (key.Key == ConsoleKey.Delete)
+                            { 
+                                if (inp == "")
+                                {
+                                    currentFile.Delete();
+
+                                } else
+                                {
+                                    inp = "";
+                                }
+                                Console.Clear();
+                                Oras(1, currentFile);
+                            }
+
                         }
                         while (key.Key != ConsoleKey.Enter);
+
                         currentFile.body.Add(inp);
                         Console.Clear();
 

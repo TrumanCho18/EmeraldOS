@@ -28,5 +28,22 @@ namespace EmeraldOS
                 type = "String";
             }
         }
+
+        public void Set(String value)
+        {
+            this.value = value;
+            if (int.TryParse(value, out _))
+            {
+                type = "int";
+            }
+            else if (double.TryParse(value, out _))
+            {
+                type = "double";
+            }
+            else
+            {
+                type = "String";
+            }
+        }
     }
 }

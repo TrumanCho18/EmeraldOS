@@ -11,9 +11,9 @@ namespace EmeraldOS
     public class File
     {
 
-        public String name {  get; set; }
+        public String name { get; set; }
         public Directory Parent { get; set; }
-        public ArrayList body {  get; set; }
+        public ArrayList body { get; set; }
 
         public File(String name, ArrayList bodyTxt)
         {
@@ -27,10 +27,14 @@ namespace EmeraldOS
             this.body = new ArrayList();
         }
 
-        public void Oras()
+        public void Delete()
         {
+            if (body.Count > 0)
+            {
+                body.RemoveAt(body.Count - 1);
+
+            }
 
         }
-
     }
 }

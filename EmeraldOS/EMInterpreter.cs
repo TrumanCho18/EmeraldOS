@@ -16,7 +16,6 @@ namespace EmeraldOS
 
         public EMInterpreter()
         {
-            
         }
 
         public void Interpret()
@@ -25,6 +24,10 @@ namespace EmeraldOS
             //print('x')
             ArrayList tokens = LexAnalyze();
             ArrayList outp = new ArrayList();
+
+            Random rand = new Random();
+            int iBack = -1;
+            String hotSeatCon = "";
 
             memory.Clear();
 
@@ -66,6 +69,29 @@ namespace EmeraldOS
                         i = iSkip;
                     }
                     
+
+                } else if (tokens[i].ToString() == "while")
+                {
+                    hotSeatCon = tokens[i + 1].ToString().Substring(1);
+                    i += 2;
+                    iBack = i;
+                    int iSkip = i;
+                    while (tokens[iSkip].ToString() != "}-")
+                    {
+                        iSkip++;
+                    }
+
+                    if (!Solve(hotSeatCon))
+                    {
+                        i = iSkip;
+                    }
+
+                } else if (tokens[i].ToString() == "}-")
+                {
+                    if (Solve(hotSeatCon))
+                    {
+                        i = iBack;
+                    }
 
                 } else
                 {
@@ -125,6 +151,26 @@ namespace EmeraldOS
                             }
 
                             i += 2;
+                        } else if (tokens[i + 2].ToString() == "rand[]")
+                        {
+                            Boolean stay = true;
+
+                            for (int j = 0; j < memory.Count; j++)
+                            {
+                                Cache c = (Cache)memory[j];
+                                if (c.name == tokens[i].ToString())
+                                {
+                                    c.value = rand.Next(1, 100).ToString();
+                                    stay = false;
+                                    break;
+                                }
+                            }
+
+                            if (stay)
+                            {
+                                Cache cache = new Cache(tokens[i].ToString(), rand.Next(1, 100).ToString());
+                                memory.Add(cache);
+                            }
                         }
                     }
                 }
@@ -354,6 +400,30 @@ namespace EmeraldOS
                 }
 
                 return (op1 == op2);
+            } else if (str.Contains("!="))
+            {
+                temp1 = str.Split("!=")[0];
+                temp2 = str.Split("!=")[1];
+
+                if (Type(temp1) == "var")
+                {
+                    op1 = MemSearch(temp1).value;
+                }
+                else
+                {
+                    op1 = Dequote(temp1);
+                }
+
+                if (Type(temp2) == "var")
+                {
+                    op2 = MemSearch(temp2).value;
+                }
+                else
+                {
+                    op2 = Dequote(temp2);
+                }
+
+                return (op1 != op2);
             }
             return false;
         }
